@@ -5,6 +5,7 @@ import {
   Pig,
   resolveBirdVsBlock,
   resolveBirdVsPig,
+  resolveBlockVsBlock,
   resolvePigVsBlock,
 } from './entities.js';
 import { birdDecks } from '../content/birds.js';
@@ -104,6 +105,12 @@ export class GameWorld {
     for (const pig of this.pigs) {
       for (const block of this.blocks) {
         resolvePigVsBlock(pig, block);
+      }
+    }
+
+    for (let i = 0; i < this.blocks.length; i += 1) {
+      for (let j = i + 1; j < this.blocks.length; j += 1) {
+        resolveBlockVsBlock(this.blocks[i], this.blocks[j]);
       }
     }
 

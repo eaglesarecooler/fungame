@@ -205,25 +205,34 @@ export const resolveBirdVsPig = (bird, pig) => {
 
 export const resolveBirdVsBlock = (bird, block) => {
   if (!block.alive || !bird.active) return 0;
-  const hitBox = {
-    x: bird.x - bird.radius,
-    y: bird.y - bird.radius,
-    w: bird.radius * 2,
-    h: bird.radius * 2,
-  };
+  const closestX = clamp(bird.x, block.x, block.x + block.w);
+  const closestY = clamp(bird.y, block.y, block.y + block.h);
+  const dx = bird.x - closestX;
+  const dy = bird.y - closestY;
+  const distSq = dx * dx + dy * dy;
+  const radiusSq = bird.radius * bird.radius;
+  if (distSq > radiusSq) return 0;
 
-  if (!rectsOverlap(hitBox, block.rect)) return 0;
+  const dist = Math.sqrt(Math.max(0.0001, distSq));
+  const penetration = bird.radius - dist;
+  const n = distSq < 0.0001 ? { x: 0, y: -1 } : { x: dx / dist, y: dy / dist };
+  bird.x += n.x * penetration;
+  bird.y += n.y * penetration;
 
   const impact = Math.sqrt(bird.vx * bird.vx + bird.vy * bird.vy) * bird.mass * bird.power;
-  block.damage(impact * 0.06);
+  const vn = bird.vx * n.x + bird.vy * n.y;
+  if (vn < 0) {
+    const bounce = 0.28;
+    const impulse = -(1 + bounce) * vn;
+    bird.vx += impulse * n.x;
+    bird.vy += impulse * n.y;
+    block.vx -= n.x * impact * 0.007;
+    block.vy -= n.y * impact * 0.007;
+  }
 
-  const centerX = block.x + block.w * 0.5;
-  const centerY = block.y + block.h * 0.5;
-  const n = normalize(bird.x - centerX, bird.y - centerY);
-  bird.vx += n.x * 30;
-  bird.vy += n.y * 30;
-  block.vx -= n.x * impact * 0.01;
-  block.vy -= n.y * impact * 0.01;
+  if (impact > 130) {
+    block.damage((impact - 130) * 0.026);
+  }
 
   return block.alive ? 55 : 450;
 };
@@ -258,8 +267,50 @@ export const resolvePigVsBlock = (pig, block) => {
   }
 
   const impact = Math.sqrt(pig.vx * pig.vx + pig.vy * pig.vy) * pig.mass;
-  block.damage(impact * 0.03);
-  pig.damage(impact * 0.015);
+  if (impact > 35) {
+    block.damage((impact - 35) * 0.01);
+    pig.damage((impact - 35) * 0.006);
+  }
+};
+
+export const resolveBlockVsBlock = (a, b) => {
+  if (!a.alive || !b.alive) return;
+  if (!rectsOverlap(a.rect, b.rect)) return;
+
+  const overlapX = Math.min(a.x + a.w - b.x, b.x + b.w - a.x);
+  const overlapY = Math.min(a.y + a.h - b.y, b.y + b.h - a.y);
+  const invMassA = 1 / Math.max(0.001, a.mass);
+  const invMassB = 1 / Math.max(0.001, b.mass);
+  const totalInvMass = invMassA + invMassB;
+
+  if (overlapY <= overlapX) {
+    const dir = a.y < b.y ? -1 : 1;
+    const correction = overlapY;
+    a.y -= (correction * invMassA / totalInvMass) * dir;
+    b.y += (correction * invMassB / totalInvMass) * dir;
+
+    const relativeVy = a.vy - b.vy;
+    const impulse = relativeVy * 0.3;
+    a.vy -= impulse * invMassA;
+    b.vy += impulse * invMassB;
+  } else {
+    const dir = a.x < b.x ? -1 : 1;
+    const correction = overlapX;
+    a.x -= (correction * invMassA / totalInvMass) * dir;
+    b.x += (correction * invMassB / totalInvMass) * dir;
+
+    const relativeVx = a.vx - b.vx;
+    const impulse = relativeVx * 0.2;
+    a.vx -= impulse * invMassA;
+    b.vx += impulse * invMassB;
+  }
+
+  const impact = Math.hypot(a.vx - b.vx, a.vy - b.vy) * Math.min(a.mass, b.mass);
+  if (impact > 70) {
+    const damage = (impact - 70) * 0.008;
+    a.damage(damage);
+    b.damage(damage);
+  }
 };
 
 export const applyExplosion = (world, x, y, radius, force) => {

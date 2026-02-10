@@ -85,8 +85,9 @@ const onPointerUp = () => {
 
   const dx = world.slingshot.x - dragState.x;
   const dy = world.slingshot.y - dragState.y;
-  const vx = clamp(dx * 4.1, -460, 460);
-  const vy = clamp(dy * 4.1, -540, 540);
+  const launchScale = 5.2;
+  const vx = clamp(dx * launchScale, -620, 620);
+  const vy = clamp(dy * launchScale, -700, 700);
 
   world.launchActiveBird(vx, vy);
   dragState.x = world.slingshot.x;
