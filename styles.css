@@ -1,0 +1,96 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, #1d3557 0%, #0b132b 45%, #05070f 100%);
+  color: #e8f1ff;
+}
+
+.topbar {
+  text-align: center;
+  padding: 1rem 1rem 0.4rem;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: 0.06em;
+}
+
+.topbar p {
+  margin: 0.4rem 0 0;
+  color: #b8ccff;
+}
+
+.layout {
+  width: min(1320px, 98vw);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  padding-bottom: 1rem;
+}
+
+.hud,
+.controls,
+.help {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(138, 180, 255, 0.25);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+#gameCanvas {
+  width: 100%;
+  max-height: 78vh;
+  border-radius: 8px;
+  border: 1px solid rgba(138, 180, 255, 0.35);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(#8ec9ff, #cde8ff 62%, #97cb74 62%, #689f44 100%);
+}
+
+button {
+  appearance: none;
+  border: 1px solid rgba(160, 195, 255, 0.45);
+  background: linear-gradient(180deg, #2f4f92, #20376a);
+  color: #f5f8ff;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+.help h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.help ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.pulse {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
